@@ -15,7 +15,8 @@ public class Main {
                 Map.entry("Garden Chair", List.of("Courier"))
         ));
 
-        var items = List.of("Steak (300g)", "Carrots (1kg)", "Cold Beer (330ml)", "AA Battery (4 Pcs.)", "Espresso Machine", "Garden Chair");
+        var items = List.of("Steak (300g)", "Carrots (1kg)", "Cold Beer (330ml)", "AA Battery (4 Pcs.)", "Espresso " +
+                "Machine", "Garden Chair");
 
         var res = bs.split(items);
         System.out.println(res);

@@ -1,5 +1,6 @@
 package com.ocado.basket;
 
+import com.sun.source.tree.AssertTree;
 import org.javatuples.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,6 +28,13 @@ class BasketSplitterTest {
                 Map.entry("Espresso Machine", List.of("Courier", "Click&Collect")),
                 Map.entry("Garden Chair", List.of("Courier"))
         ));
+    }
+
+    @Test
+    void checkConfigParsing() {
+        var bs2 = new BasketSplitter("src/test/resources/config.json");
+
+        Assertions.assertEquals(bs.getConfig(), bs2.getConfig());
     }
 
     @Test

@@ -1,7 +1,14 @@
 package com.ocado.basket;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Streams;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.javatuples.Pair;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -13,13 +20,35 @@ import static com.google.common.collect.Sets.intersection;
 import static com.ocado.basket.Utils.*;
 
 public class BasketSplitter {
-    private final Map<String, List<String>> config;
 
+    protected static final Logger logger = LogManager.getLogger();
+
+    private final Map<String, List<String>> config;
     private final Map<String, Set<String>> reversedConfig;
 
+    private static Map<String, List<String>> readConfig(String absolutePathToConfigFile) {
+
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            File file = new File(absolutePathToConfigFile);
+
+            return Streams.stream(objectMapper.readTree(file).fields())
+                    .map(field -> {
+                        String key = field.getKey();
+                        List<String> value = Streams.stream(field.getValue().iterator())
+                                .map(JsonNode::asText).toList();
+                        return Map.entry(key, value);
+                    })
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        } catch (IOException e) {
+            logger.error("Wrong config file");
+            return Map.of();
+        }
+    }
+
     public BasketSplitter(String absolutePathToConfigFile) {
-        /* ... */
-        this(Map.of());
+        this(readConfig(absolutePathToConfigFile));
     }
 
     public BasketSplitter(Map<String, List<String>> config) {
@@ -27,14 +56,18 @@ public class BasketSplitter {
         this.reversedConfig = reverseMap(config);
     }
 
-    public List<Set<String>> getAllDeliveryOptionSubsets() {
+    public Map<String, List<String>> getConfig() {
+        return config;
+    }
+
+    private List<Set<String>> getAllDeliveryOptionSubsets() {
         List<String> options = toList(reversedConfig.keySet());
         List<List<Boolean>> masks = bitMasks(options.size());
 
         return masks.stream().map(mask -> toSet(applyMask(options, mask))).toList();
     }
 
-    public boolean checkCover(Set<String> options, List<String> items) {
+    protected boolean checkCover(Set<String> options, List<String> items) {
         return options
                 .stream()
                 .flatMap(option -> reversedConfig.getOrDefault(option, Set.of()).stream())
@@ -59,7 +92,7 @@ public class BasketSplitter {
                 .reduce((p1, p2) -> p1.getValue1().size() > p2.getValue1().size() ? p1 : p2);
     }
 
-    public Map<String, List<String>> split(List<String> items, Set<String> options) {
+    private Map<String, List<String>> split(List<String> items, Set<String> options) {
         if (items.isEmpty()) return Map.of();
 
         return getLargestDeliveryOption(items, options)
