@@ -1,6 +1,5 @@
 package com.ocado.basket;
 
-import com.sun.source.tree.AssertTree;
 import org.javatuples.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,7 +7,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
